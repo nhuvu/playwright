@@ -12,7 +12,12 @@ import { defineConfig, devices } from '@playwright/test';
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  testDir: './tests',
+  globalTimeout: 60000, //global timeout for all tests
+  timeout: 30000, //test timeout (can not be greater than global timeout)
+  expect:{
+    timeout: 2000 //element assertion timeout (can not be greater than navigation timeout)
+  },
+  testMatch: ['**/*.spec.ts'],
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -30,6 +35,8 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    actionTimeout: 5000, //action timeout (can not be greater than test timeout)
+    navigationTimeout: 5000 //navigation timeout (can not be greater than action timeout)
   },
 
   /* Configure projects for major browsers */
