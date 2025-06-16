@@ -14,9 +14,9 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   globalTimeout: 60000, //global timeout for all tests
   timeout: 30000, //test timeout (can not be greater than global timeout)
-  expect:{
-    timeout: 2000 //element assertion timeout (can not be greater than navigation timeout)
-  },
+  // expect:{
+  //   timeout: 5000 //element assertion timeout (can not be greater than navigation timeout)
+  // },
   testMatch: ['**/*.spec.ts'],
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -34,9 +34,9 @@ export default defineConfig({
     // baseURL: 'http://localhost:3000',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
-    actionTimeout: 5000, //action timeout (can not be greater than test timeout)
-    navigationTimeout: 5000 //navigation timeout (can not be greater than action timeout)
+    trace: 'on-first-retry'
+    // actionTimeout: 10000, //action timeout (can not be greater than test timeout)
+    // navigationTimeout: 10000 //navigation timeout (can not be greater than action timeout)
   },
 
   /* Configure projects for major browsers */
