@@ -59,3 +59,44 @@ test('Checkboxes', async({page}) => {
         expect (await box.isChecked()).toBeFalsy();
     }
 })
+
+test('List and Dropdowns', async({page}) => {
+    const dropdownMenu = page.locator('ngx-header nb-select');
+    await dropdownMenu.click();
+
+    page.getByRole('list') //use this when list has a 'ul' tag
+    page.getByRole('listitem') //use this when list has a 'li' tag
+
+    const optionList = page.locator('nb-option-list nb-option');
+    await expect(optionList).toHaveText(["Light", "Dark", "Cosmic", "Corporate"]);
+    await optionList.filter({hasText: "Cosmic"}).click(); //filter the list to find the desired option and click
+
+    const header = page.locator('nb-layout-header');
+    await expect(header).toHaveCSS('background-color', 'rgb(50, 50, 89)'); //assert the header background color after selecting the option
+
+    //Select each color option and assert the header background color
+    const colorList = {
+        "Light": "rgb(255, 255, 255)",
+        "Dark": "rgb(34, 43, 69)",
+        "Cosmic": "rgb(50, 50, 89)",
+        "Corporate": "rgb(255, 255, 255)"
+    }
+    await dropdownMenu.click(); 
+    for(const color in colorList){
+        await optionList.filter({hasText: color}).click() //color = Light, Dark, Cosmic, Corporate
+        await expect(header).toHaveCSS('background-color', colorList[color]);
+        if(color !== "Corporate") { //when not iterate the last element
+            await dropdownMenu.click(); //reopen the dropdown menu for the next iteration
+        }
+    }
+})
+
+test('Tooltips', async({page}) => {
+    await page.getByText('Modal & Overlays').click();
+    await page.getByText('Tooltip').click();
+
+    const toolTipCard = page.locator('nb-card', {hasText: "Tooltip Placements"});
+    await toolTipCard.getByRole('button', {name: "Top"}).hover(); //hover over the button to show the tooltip
+    const tooltip = await page.locator('nb-tooltip').textContent();
+    expect(tooltip).toEqual('This is a tooltip'); //assert the tooltip text
+})
