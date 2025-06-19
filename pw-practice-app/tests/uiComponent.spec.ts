@@ -100,3 +100,74 @@ test('Tooltips', async({page}) => {
     const tooltip = await page.locator('nb-tooltip').textContent();
     expect(tooltip).toEqual('This is a tooltip'); //assert the tooltip text
 })
+
+test('Dialog Box', async({page}) => {
+    await page.getByText('Tables & Data').click();
+    await page.getByText('Smart Table').click();
+
+    //Create a listener for the dialog event from the browser
+    page.on('dialog', dialog => {
+        expect(dialog.message()).toEqual('Are you sure you want to delete?'); //assert the dialog message
+        dialog.accept(); //accept the dialog
+    })
+    await page.getByRole('table').locator('tr', {hasText: "mdo@gmail.com"}).locator('.nb-trash').click();
+    await expect(page.locator('tr').first()).not.toHaveText("mdo@gmail.com");
+})
+
+test('Web Tables', async({page}) => {
+    await page.getByText('Tables & Data').click();
+    await page.getByText('Smart Table').click();
+
+    //1. Get the row by any text in the row
+    const targetRow = page.getByRole('row', {name: "twitter@outlook.com"}); 
+    await targetRow.locator('.nb-edit').click(); //click the edit button in the row
+    //get the age box to modify the edit action (clear and fill new value)
+    await page.locator('input-editor').getByPlaceholder('Age').clear();
+    await page.locator('input-editor').getByPlaceholder('Age').fill('30'); 
+    await page.locator('.nb-checkmark').click();
+    const ageFieldValue = await targetRow.locator('td').last().textContent();
+    expect(ageFieldValue).toEqual('30');
+
+    //2. Get the row based on value in a specific column
+    await page.locator('.ng2-smart-pagination-nav').getByText('2').click(); //go to page 2
+    //get the rows by text "11" first, then filter by the ID column between rows and only get the row with ID 11
+    const targetRowById = page.getByRole('row', {name: "11"}).filter({has: page.locator('td').nth(1).getByText("11")}); 
+    await targetRowById.locator('.nb-edit').click(); 
+    await page.locator('input-editor').getByPlaceholder('E-mail').clear();
+    await page.locator('input-editor').getByPlaceholder('E-mail').fill('araleTest@mail.com'); 
+    await page.locator('.nb-checkmark').click();
+
+    const emailFieldValue = await targetRowById.locator('td').nth(5).textContent();
+    expect(emailFieldValue).toEqual('araleTest@mail.com');
+
+    //3. Test table filter
+    const ages = ["20", "30", "40", "200"];
+    
+    for(let age of ages){
+        await page.locator('input-filter').getByPlaceholder('Age').clear();
+        await page.locator('input-filter').getByPlaceholder('Age').fill(age);
+        await page.waitForTimeout(500); //wait for the filter to apply
+
+        const ageRows = page.locator('tbody tr');
+        for(let row of await ageRows.all()){
+            const cellValue = await row.locator('td').last().textContent();
+            if(age === "200"){
+                expect(cellValue).toContain("No data found"); 
+            }else{
+                expect(cellValue).toEqual(age); //assert that the age cell in each row has the same age value
+            }
+        }
+    }
+})
+
+test('Date Picker', async({page}) => {
+    await page.getByText('Forms').click();
+    await page.getByText('Datepicker').click();
+
+    const calendarInput = page.getByPlaceholder('Form Picker');
+    await calendarInput.click(); //open the date picker
+
+    //getByText: get with partial match, to get exact match use {exact: true}
+    await page.locator('[class=" day-cell ng-star-inserted"]').getByText('1', {exact: true}).click(); //select the 1st day of the month
+    await expect(calendarInput).toHaveValue('Jun 1, 2025'); //assert the date value
+})
